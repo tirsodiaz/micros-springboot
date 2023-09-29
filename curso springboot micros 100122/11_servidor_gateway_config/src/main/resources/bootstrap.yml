@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: servidor-gateway
+  cloud:
+    config:
+      uri: http://localhost:8888  #Localización Spring Cloud Config
