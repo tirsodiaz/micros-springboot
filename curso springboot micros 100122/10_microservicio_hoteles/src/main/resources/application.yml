@@ -19,4 +19,5 @@ eureka:
     serviceUrl:
       # Direccion a la que se conecta el microservicio con eureka
       defaultZone: http://localhost:8761/eureka
-eureka.instance.preferIpAddress: true
+#si VPN comentado, no VPN descomentado
+#eureka.instance.preferIpAddress: true

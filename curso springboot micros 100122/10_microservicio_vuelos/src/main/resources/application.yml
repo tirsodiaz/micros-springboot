@@ -12,15 +12,17 @@ spring:
         implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
 server: 
-  port: 9000
+  port: 11000
 # Config de el servidor  
 eureka: 
   client:    
     serviceUrl:
       # Direccion a la que se conecta el microservicio con eureka
       defaultZone: http://localhost:8761/eureka
+#si VPN comentado, no VPN descomentado
 #eureka.instance.preferIpAddress: true
-  instance:
-    preferIpAddress: true
+#eureka:
+  #instance:
+    #preferIpAddress: true
       
       

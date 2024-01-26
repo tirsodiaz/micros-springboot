@@ -75,16 +75,16 @@
 			$scope.dni;		
 			$scope.mostrarTabla=true;			
 			$scope.cargarHoteles=function(){				
-				let url = "http://localhost:8000/hoteles"; 	//Descomentar @CrossOrigin(origins = "*") en controller
-				//let url = "http://localhost:7000/shoteles/hoteles"; 
+				//let url = "http://localhost:8000/hoteles"; 	//Descomentar @CrossOrigin(origins = "*") en controller
+				let url = "http://localhost:7000/shoteles/hoteles"; 
 				$http.get(url).then(function(res){
 					$scope.hoteles=res.data;
 								
 				});
 			}
 			$scope.cargarVuelos=function(){				
-				let url = "http://localhost:9000/vuelos/1";	//Descomentar @CrossOrigin(origins = "*") en controller
-				//let url = "http://localhost:7000/svuelos/vuelos/1";	
+				//let url = "http://localhost:11000/vuelos/1";	//Descomentar @CrossOrigin(origins = "*") en controller
+				let url = "http://localhost:7000/svuelos/vuelos/1";	
 				$http.get(url).then(function(res){
 					$scope.vuelos=res.data;								
 				});

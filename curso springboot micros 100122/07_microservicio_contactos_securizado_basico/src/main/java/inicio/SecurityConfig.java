@@ -59,7 +59,7 @@ public class SecurityConfig {
 		.authorizeRequests()
 		.antMatchers(HttpMethod.POST, "/contactos").hasAnyAuthority("ADMIN") //.hasAnyRole("ADMIN")
 		.antMatchers("/contactos").authenticated() //contactos/** securiza ademas si parámetros
-		//.anyRequest().permitAll() cualquier petición
+		.anyRequest().permitAll() //cualquier petición
 		.and()
 		.httpBasic();
 		return http.build();

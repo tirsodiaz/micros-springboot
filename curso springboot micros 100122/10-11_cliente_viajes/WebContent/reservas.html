@@ -40,8 +40,8 @@
 		app.controller("comunicacionController",function($scope,$http){
 			$scope.reservas=[];	
 			$scope.cargar=function(){
-				let url="http://localhost:10000/reservas"; //Descomentar @CrossOrigin(origins = "*") en controller
-				//let url="http://localhost:7000/sreservas/reservas";
+				//let url="http://localhost:10000/reservas"; //Descomentar @CrossOrigin(origins = "*") en controller
+				let url="http://localhost:7000/sreservas/reservas";
 				$http.get(url).then(function(res){
 					$scope.reservas=res.data;			
 				});

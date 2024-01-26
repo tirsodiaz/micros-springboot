@@ -6,7 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import dao.AgendaDao;
+import model.NombreEmailCount;
 import model.Contacto;
+import model.INombreEmailCount;
 
 @Service
 public class ContactosServiceImpl implements ContactosService {
@@ -26,6 +28,11 @@ public class ContactosServiceImpl implements ContactosService {
 	@Override
 	public List<Contacto> recuperarContactos() {
 		return dao.devolverContactos();
+	}
+	
+	@Override
+	public List<INombreEmailCount> countByNombreAndEmail(int edad) {
+		return dao.countByNombreAndEmail(edad);
 	}
 
 	@Override

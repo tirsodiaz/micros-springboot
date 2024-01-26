@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import model.Vuelo;
 import service.VuelosService;
 
-@CrossOrigin(origins = "*") // Comentar si Gateway ALLOWED_ORIGIN = "*"; //Descomentar si zuul o acceso desde .html http://localhost:10000/reservas
+//@CrossOrigin(origins = "*") // Comentar si Gateway ALLOWED_ORIGIN = "*"; //Descomentar si zuul o acceso desde .html http://localhost:10000/reservas
 @RestController
 public class VuelosController {
 

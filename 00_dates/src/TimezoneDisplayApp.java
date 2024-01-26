@@ -35,8 +35,8 @@ public class TimezoneDisplayApp {
         
         //Resumiendo OffsetDateTime es para modelos de persistencia y ZonedDateTime para realizar operaciones con las fechas, 
         //y como ultimo comentario mencionar que podemos obtener un ZonedDateTime mediante un OffsetDateTime y viceversa.
-        ZoneId zone = ZoneId.of("Europe/Madrid");
-        ZonedDateTime zonedDateTime = ZonedDateTime.now(zone); //= ZonedDateTime.of(localDateTime, zoneId)
+        ZoneId zoneId = ZoneId.of("Europe/Madrid");
+        ZonedDateTime zonedDateTime = ZonedDateTime.now(zoneId); //= ZonedDateTime.of(localDateTime, zoneId)
         ZonedDateTime destZonedDateTimeCanary = zonedDateTime.withZoneSameInstant(ZoneId.of("Atlantic/Canary"));
         ZonedDateTime destZonedDateTimeGMT = zonedDateTime.withZoneSameInstant(ZoneId.of("GMT"));
 

@@ -20,7 +20,7 @@ public class Application {
         RestTemplate template = new RestTemplate();
         BasicAuthenticationInterceptor basicAuthenticationInterceptor;
         basicAuthenticationInterceptor = new BasicAuthenticationInterceptor("user1", "user1");
-        //basicAuthenticationInterceptor=new BasicAuthenticationInterceptor("admin", "admin");
+        basicAuthenticationInterceptor=new BasicAuthenticationInterceptor("admin", "admin");
         //basicAuthenticationInterceptor = new BasicAuthenticationInterceptor("user5", "user5");
         template.getInterceptors().add(basicAuthenticationInterceptor);
         return template;

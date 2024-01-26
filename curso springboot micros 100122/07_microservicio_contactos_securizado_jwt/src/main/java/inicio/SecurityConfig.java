@@ -19,6 +19,7 @@ import org.springframework.security.web.SecurityFilterChain;
 @Configuration
 public class SecurityConfig {	
 	AuthenticationManager auth;
+	
 	@Bean
 	public InMemoryUserDetailsManager detailsManager() throws Exception{
 		List<UserDetails> users=Arrays.asList(  //List.of

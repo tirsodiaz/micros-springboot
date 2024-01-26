@@ -1,6 +1,8 @@
 package controller;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,7 +17,9 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import model.NombreEmailCount;
 import model.Contacto;
+import model.INombreEmailCount;
 import service.ContactosService;
 @CrossOrigin(origins = "*") //permite recibir peticiones desde cualquier origen
 @RestController
@@ -36,6 +40,16 @@ public class ContactosController {
 	@GetMapping(value="contactos/{id}",produces=MediaType.APPLICATION_JSON_VALUE)
 	public Contacto recuperarContactos(@PathVariable("id") int id) {
 		return service.buscarContacto(id);
+	}
+	
+	@GetMapping(value="countByNombreAndEmail/{id}",produces=MediaType.APPLICATION_JSON_VALUE)
+	public List <INombreEmailCount> countByNombreAndEmail(@PathVariable("id") int id) {
+		return service.countByNombreAndEmail(id);
+	}
+	
+	@GetMapping(value="countCollectionByNombreAndEmail/{id}",produces=MediaType.APPLICATION_JSON_VALUE)
+	public Map<String, Map<String, Long>> countCollectionByNombreAndEmail(@PathVariable("id") int id) {
+		 return service.recuperarContactos().stream().filter(c->c.getEdad()<id).collect(Collectors.groupingBy(Contacto::getNombre, Collectors.groupingBy(Contacto::getEmail, Collectors.counting())));
 	}
 	
 	@PostMapping(value="contactos",consumes=MediaType.APPLICATION_JSON_VALUE,produces=MediaType.TEXT_PLAIN_VALUE)

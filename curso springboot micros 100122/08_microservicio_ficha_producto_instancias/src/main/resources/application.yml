@@ -1,7 +1,7 @@
 eureka:
   instance:
-    instance-id: intancia1
-    #instance-id: intancia2
+    instance-id: intancia1-@project.version@-${spring.application.name}
+    #instance-id: intancia2-@project.version@-${spring.application.name}
   client:
     serviceUrl:
       # Direccion a la que se conecta el microservicio con eureka

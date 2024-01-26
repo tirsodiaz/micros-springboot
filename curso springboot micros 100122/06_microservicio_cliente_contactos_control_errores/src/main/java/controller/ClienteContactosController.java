@@ -52,7 +52,7 @@ public class ClienteContactosController {
 			e.printStackTrace();
 			return new ResponseEntity<List<Persona>>(new ArrayList<Persona>(), headers, HttpStatus.NOT_FOUND);
 		} catch (ExecutionException e) {
-			// TODO Auto-generated catch block
+			// microservicio destino no disponible o disponible pero devuelve excepción levantada
 			e.printStackTrace();
 			headers.add("error", e.getMessage());
 			return new ResponseEntity<List<Persona>>(new ArrayList<Persona>(), headers, HttpStatus.NOT_FOUND);			

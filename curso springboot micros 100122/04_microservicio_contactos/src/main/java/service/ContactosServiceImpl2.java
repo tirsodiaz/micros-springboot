@@ -7,7 +7,9 @@ import org.springframework.stereotype.Service;
 
 import dao.AgendaDao;
 import dao.AgendaJpaSpring;
+import model.NombreEmailCount;
 import model.Contacto;
+import model.INombreEmailCount;
 
 //@Service
 public class ContactosServiceImpl2 implements ContactosService {
@@ -50,6 +52,12 @@ public class ContactosServiceImpl2 implements ContactosService {
 	@Override
 	public Contacto buscarContacto(int idContacto) {
 		return agendaRepository.findById(idContacto).orElse(null);
+	}
+
+	@Override
+	public List<INombreEmailCount> countByNombreAndEmail(int edad) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

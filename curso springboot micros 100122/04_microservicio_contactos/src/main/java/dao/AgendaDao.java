@@ -2,12 +2,14 @@ package dao;
 
 import java.util.List;
 
+import model.NombreEmailCount;
 import model.Contacto;
+import model.INombreEmailCount;
 
 public interface AgendaDao {
 	void agregarContacto(Contacto contacto);
 
-	Contacto recuperarContacto(String email);
+	Contacto recuperarContacto(String email);	
 
 	void eliminarContacto(String email);
 
@@ -18,4 +20,6 @@ public interface AgendaDao {
 	Contacto recuperarContacto(int idContacto);
 	
 	void actualizarContacto(Contacto contacto);
+
+	List<INombreEmailCount> countByNombreAndEmail(int edad);
 }

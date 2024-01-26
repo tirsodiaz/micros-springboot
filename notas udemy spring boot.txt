@@ -40,7 +40,7 @@ public void init() { //se va a lanzar tras instanciarse
 
 en eclipse JPA Tools (si proyect facets JPA y Java>=5, no library), generar clase entity from table
 interface JPA extends JpaRepository con métodos de acceso de query y acceso atributos no identity
-clase daoImpl implements dao (daoImpl con referencia a interface JPA) (esta capa sobra si en serviceImpl tenemos referencia a JPARepository o CrudRepository)
+clase daoImpl implements dao (daoImpl con referencia a interface JPA) (esta capa sobra si en serviceImpl tenemos referencia a la interfaz JPARepository o CrudRepository)
 clase serviceImpl implements service (serviceImpl con referencia a dao)
 clase controller (con referencia a service)
 
@@ -67,10 +67,10 @@ Ponemos @Bean en métodos cuya clase contiene @Configuration para que instancie 
 modo asíncrono llamada servicio:
 	1.método en service con anotación @Async //Fundamental para asíncrono y devuelve CompletableFuture, si se quita funciona síncrono 
 		public CompletableFuture<List<Persona>> AltaConsultarAsync(Persona persona) {	
-	2.Anotar en clase con @Configuration para que se instancie y añadir la anotacion @EnableAsync
+	2.Anotar en clase con @Configuration para que se instancie y añadir la anotacion @EnableAsync en el método asíncrono
 	@Bean
-	public Executor executor() {
-		return new ThreadPoolTaskExecutor();
+	public RestTemplate template() {
+		return new RestTemplate();
 	}
 	3.en el controller .get() del objeto CompletableFuture; (en el .get se unen hilos)
 
@@ -138,10 +138,7 @@ zuul, gateway servidores punto de acceso común (desde postman no se tiene en cu
 servidor eureka con dependencia eureka, @EnableEurekaServer, server configuracion en aplication.properties
 microservicio al ser levantado se registra en eureka  con dependencia eureka client y configuracion nombre servicio
 microservicio cliente no registrado en eureka con dependencia eureka client con @LoadBalancer en RestTemplate, y usando el nombre del micro registrado en eureka
-Tanto servidor como cliente debe conocer ubicacion de servidor eureka 
-Si eureka securizado (añadir starter y clase SecurityConfig) indicaremos acceso a la monitorización de micros registrados eureka.client.serviceUrldefaultZone:admin:admin@localhost:8761/eureka
-Tanto cliente como servidor los micros en properties ubicacion eureka incluirán además usuario y password para consulta y registro
-en servidor eureka aplication.properties se indicará usuario y contraseña para acceso a la administracion de servidores registrados
+Cliente debe conocer gateway y servidor la ubicacion de servidor eureka 
 
 servidor zuul provee al microservicio cliente mediante zuul routes (según path asocia id de eureka serviceId o bien directamente url)
 para zuul solo necesita spring zuul, eureka client y spring web

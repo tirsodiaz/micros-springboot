@@ -5,7 +5,9 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import model.NombreEmailCount;
 import model.Contacto;
+import model.INombreEmailCount;
 
 @Repository
 public class AgendaDaoImpl implements AgendaDao {
@@ -47,9 +49,11 @@ public class AgendaDaoImpl implements AgendaDao {
 
 	@Override
 	public void actualizarContacto(Contacto contacto) {
-		agenda.save(contacto);
-		
+		agenda.save(contacto);		
 	}
 	
-
+	@Override
+	public List<INombreEmailCount> countByNombreAndEmail(int edad) {
+		return agenda.countByNombreAndEmail(edad);
+	}
 }

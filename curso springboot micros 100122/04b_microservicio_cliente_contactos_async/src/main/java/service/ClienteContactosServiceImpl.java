@@ -27,7 +27,7 @@ public class ClienteContactosServiceImpl implements ClienteContactosService {
         String postForObject = template.postForObject(url + "/contactos", persona, String.class);
         Persona[] personas = template.getForObject(url + "/contactos", Persona[].class);
         ResponseEntity<Persona[]> rPersonas = template.getForEntity(url + "/contactosresponseentity", Persona[].class);
-        return CompletableFuture.completedFuture(Arrays.asList(personas));
+        return CompletableFuture.completedFuture(Arrays.asList(personas));  //rPersonas.getBody();
     }
 
     @Override
