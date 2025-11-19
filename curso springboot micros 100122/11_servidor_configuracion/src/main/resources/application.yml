@@ -1,0 +1,20 @@
+server:
+  port: 8888
+spring:
+  #profiles:
+    #active:
+    #- native
+  cloud:
+    config:
+      server:
+        #native:      
+          #search-locations:
+          #- file:///c:\cursos\spring-boot\WS_EC_2022_MICROS\curso springboot micros 100122\11_migit_cloud_curso\configuracion-micros
+
+        git:   #direccion repositorio remoto
+          uri: https://github.com/tirsodiaz/configuracion-micros
+        default-label: master
+
+#mi git
+#tirsodiaz
+#Intranet09.

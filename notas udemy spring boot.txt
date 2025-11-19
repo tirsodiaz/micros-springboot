@@ -1,0 +1,375 @@
+mvn -version
+java -version
+variables de entorno
+MAVEN_HOME
+C:\securitas\software\apache-maven-3.6.3
+
+Path
+C:\securitas\software\apache-maven-3.6.3\bin
+
+curso udemy microservicios
+spring mvc aplicacion contactos sobre servidor de aplicaciones tomcat
+	//contextPath=contactos (Web Project Settings) 
+	//run web application on tomcat	+ http://localhost:8080/contactos/contactos (open in browser contactos spring mvc.html según contextPath)
+aplicación monolítica=spring mvc, inconveniente se requiere repeticion de código, poca flexibilidad, ficheros .xml de configuración (web.xml, springConfig.xml, mvcConfig.xml)
+microservicios=los servicios son más ligeros y pueden ser compartidos siendo redistribuidos mayor flexibilidad y reutilización (ficheros application.properties, application.yml)
+Los microservicios son un jar que incluyen el servidor de aplicaciones
+los contenedores incluirían el jar anterior y la máquina virtual de java (los contenedores comparten el sistema operativo)
+Run as maven build...(Goals=deploy o package) generamos jar, nos vamos a carpeta target y ejecutamos java -jar contactos.jar (se levanta el micro con el entorno implícito)
+
+@ComponentScan(basePackages = {"controller","dao","service"})
+@EntityScan(basePackages = {"model"})
+@EnableJpaRepositories(basePackages = {"dao"})
+@SpringBootApplication
+
+@CrossOrigin(origins = "*") //permite recibir peticiones desde cualquier origen
+@RestController
+@RequestMapping("/order")
+clase
+
+@GetMapping(value="cursos",produces=MediaType.APPLICATION_XML_VALUE)   //devuelve XML, si método produce o devuelve xml entonces para mapear objeto a xml se necesita dependiencia en pom.xml com.fasterxml.jackson.dataformat y la clase necesita la anotación @XMLRootElement
+@GetMapping(value="cursos",produces=MediaType.APPLICATION_JSON_VALUE)  //devuelve JSON, si método produce o devuelve json entonces para mapear objeto no se necesita anotacion en la clase
+@GetMapping(value="cursos/{id}")
+metodo
+entrada de parámetros mediante @PathVariable
+entrada de parámetros mediante @RequestParam
+entrada de parámetros mediante @RequestBody (se hace el mapeo automáticamente según clase)
+
+@Override
+@PostConstruct
+public void init() { //se va a lanzar tras instanciarse
+
+en eclipse JPA Tools (si proyect facets JPA y Java>=5, no library), generar clase entity from table
+interface ContactosJpa extends JpaRepository con métodos de acceso de query y acceso atributos no identity
+clase ContactoDaoImpl implements dao (daoImpl con referencia a interface ContactosJpa) (esta capa sobra si en serviceImpl tenemos referencia al interface JpaRepository o CrudRepository)
+clase ContactosServiceImpl implements service (serviceImpl con referencia a dao)
+clase ContactosController (con referencia a service)
+
+public interface ContactosJpa extends JpaRepository<Contacto, Integer>{
+	Contacto findByEmail(String email); //segun convenio de nombres, metodo explicito porque atributo no es identity
+	
+	@Transactional
+	@Modifying
+	@Query("Delete from Contactos c Where c.email=?1")
+	void eliminarPorEmail(String email);	
+
+	@Query("SELECT nombre FROM Contactos c where c.edad<?1")
+	List<String> findByEdad(int edad);
+	
+    @Query("SELECT c.edad, COUNT(c.edad) FROM Contactos AS c where c.edad<?1 GROUP BY c.edad ORDER BY c.edad DESC")
+	List<Object[]>  countByEdad(int edad);
+    
+        en caso de aggregation-functions
+    //https://www.baeldung.com/jpa-queries-custom-result-with-aggregation-functions
+        solución mediante clase
+    @Query("SELECT new model.EdadCount(c.edad,COUNT(c.edad)) FROM Contactos AS c where c.edad<?1 GROUP BY c.edad ORDER BY c.edad DESC")
+	List<EdadCount> countByEdad(int edad);
+        solución mediante interface
+    @Query("SELECT c.nombre as nombre, c.email as email, COUNT(c) as count "
+			  + "FROM Contacto AS c where c.edad<?1 GROUP BY c.nombre,c.email ORDER BY c.edad DESC")
+	List<IEdadCount> countByEdad(int edad);	
+}
+Definimos las parejas clase e interface porque en cada nivel le decimos a spring que recupere el objeto de la interface del siguiente nivel
+niveles son @RestController, @Service, @Repository (@Repository irá exclusivamente en DAOImpl)
+En la clase antoada con @Service, tendremos la referncia recuperada por @Autowired de la interface ContactosDao o bien ContactosJpa sin capa DAO
+
+comunicación Springboot instancia todas las clases con notación @Componet, @RestController, @Service, @Repository
+RestTemplate instanciado en Configuracion y recuperado mediante autowired donde se vaya a usar
+restTemplate.getForObject(url, clase respuesta, parametros)
+restTemplate.postForObject(url, clase envío, clase respuesta, parametros)
+restTemplate.postForLocation(url, clase envío, parametros)  (no devuelve nada)
+restTemplate.put(url, clase envío, parametros)				(no devuelve nada) template.put(url + "/vuelos/{p1}/{p2}", null, reserva.getVuelo(), totalPersonas);
+restTemplate.delete(url, parametros)						(no devuelve nada)
+mayor diversidad metodo .exchange (url, tipo, httpEntity(body,headers) clase envío, clase respuesta, parametros) que devuelve ResponseEntity
+String s = webClient.post().uri(url+"/contactos").contentType(MediaType.APPLICATION_JSON).bodyValue(persona)
+		.header("Authorization", "Basic "+getBase64(user,pass)) //si comentado 401 UNAUTHORIZED from POST http://localhost:8080/contactos
+		.retrieve()//.toEntityList(Persona.class); //Mono<ResponseEntity<Persona>> entityList	
+		.bodyToMono(String.class) //.bodyToMono(Void.class)
+		.block();
+Persona[] personas = webClient
+		.get().uri(url+"/contactos") //RequestHeadersSpec
+		.header("Authorization", "Basic "+getBase64(user,pass))
+		.retrieve()	//.toEntityList(Persona.class); //Mono<ResponseEntity<List<Persona>>> entityList		
+		.bodyToMono(Persona[].class)		
+		.block();
+List<Persona> listPersonas = webClient
+		.get().uri(url+"/contactos") //RequestHeadersSpec
+		.header("Authorization", "Basic "+getBase64(user,pass))
+		.retrieve()//.toEntityList(Persona.class); //Mono<ResponseEntity<List<Persona>>> entityList	
+		.bodyToFlux(Persona.class)
+		.collectList()
+		.block();
+SpringBootapplication contiene 3 anotaciones(@Configuration,@EnableAutoConfiguration,@ComponentScan)
+Ponemos @Bean en métodos cuya clase contiene @Configuration para que instancie un objeto de @RestTemplate para ser utilizado inyectado en el serviceImpl que llamará a otro micro
+modo asíncrono llamada servicio:
+	1.método en service con anotación @Async //Fundamental para asíncrono y devuelve CompletableFuture, si se quita funciona síncrono 
+		public CompletableFuture<List<Persona>> AltaConsultarAsync(Persona persona) {	
+	2.Anotar en clase con @Configuration o en clase Application para que se instancie y añadir la anotacion @EnableAsync en clase Application
+	@Bean
+	public RestTemplate template() {
+		return new RestTemplate();
+	}
+    @Bean
+	public Executor executor() {
+		return new ThreadPoolTaskExecutor();
+	}
+	3.en el controller .get() del objeto CompletableFuture; (en el .get se unen hilos)
+no necesaria librería jackson del starter web
+con ObjectMapper mapeamos estructuras irregulares en nuestros objetos los resultados devueltos por otro microservicio
+uso de readValue() para asignacion automatica a un objeto y readTree() para buceo
+
+clase de gestion de excepciones anotada con @RestControllerAdvice con los métodos que manejan cada excepción devolviendo ResponseEntity(body,headers,status)
+si HttpStatus.OK distinto de 200 entonces HttpStatusCodeException
+getForObject tenemos solo el body, getForEntity tenemos ResponseEntity para recuperar además de body, headers y status
+postForObject tenemos solo el body, postForEntity tenemos ResponseEntity para recuperar además de body, headers y status
+cliente controller con try y catch HttpStatusCodeException y cliente service
+servidor, controller y service metodos devolviendo ResponseEntity además service throw Exception, excepciones capturadas por el cliente service recibidas desde clase @RestControllerAdvice del servidor cuyos métodos devuelven ResponseEntity
+cliente, controller y service metodos devolviendo ResponseEntity<?>
+400=BadRequest, 200=OK
+
+seguridad: basica, jwt
+en ambos casos con clase SecurityConfig se definen las reglas de acceso
+en jwt usa además JWTAuthorizationFilter
+básica: se envian las credenciales en cada petición para autenticacion y autorizacion. en el RestTemplate se incorpora el interceptor con las credenciales
+token: se envian las credenciales en un post login que construye y devuelve token si usuario registrado.
+en las demas peticiones se enviará token en la cabecera authorization en headers en objeto httpEntity mediante .exchange. 
+En la clase filter JWTAuthorizationFilter se analizará token recibido en cada petición y se enviara al contexto los permisos
+el cliente usará este token incluyendolo en el header de cada petición (estamos obligados a usar método exchange para pasar header con el token)
+ResponseEntity<String> exchange = template.exchange(url + "/contactos", HttpMethod.POST, new HttpEntity<Persona>(persona, headers), String.class);
+             Persona[] personas = template.exchange(url+"/contactos", HttpMethod.GET,new HttpEntity<>(headers), Persona[].class).getBody();
+OAuth2 en lugar de usar en el servidor un filter JWTAuthorizationFilter usamos un JwtAuthConverter apuntando a éste igualmente desde la clase SecurityConfig
+la clase JwtAuthConverter con @Component para que sea instanciada, es recuperado desde la clase SecurityConfig para usarla como filtro, recuperando informacion la informacion del tolen y devolviendo un JwtAuthenticationToken 
+        
+Feign es un restTemplate, @EnableFeignClients en clase inicial + starter
+en la interface cliente se usa @FeignClient y se exponen los metodos del controller del servidor
+Dos opciones en el cliente: En controller no tenemos service, autowired de la interface Feign para hacer las llamadas
+                            En service no tenemos restTemplate, autowired de la interface Feign para hacer las llamadas
+
+swagger documentación http://localhost:8080/swagger-ui.html
+springdoc			  http://localhost:8080/swagger-ui/index.html
+spring.mvc.pathmatch.matching-strategy=ant-path-matcher	#si spring boot >=2.5 para compatibilidad con swagger
+a partir de spring boot 3 no puede usarse swagger sino springdoc
+springdoc http://localhost:8000/swagger-ui.html (añadir 2 dependencias y no se usa clase de configuracion como en swagger) + añadir en properties:
+springdoc.packagesToScan=controller
+springdoc.pathsToMatch=/**
+	@Operation(summary = "contactos", description = "Listado de todos los contactos existentes")
+	@GetMapping(value="contactos",produces=MediaType.APPLICATION_JSON_VALUE)
+	public List<Contacto> recuperarContactos() {
+		return service.recuperarContactos();
+	}
+	
+	@GetMapping(value="contactos/{id}",produces=MediaType.APPLICATION_JSON_VALUE)
+	public Contacto recuperarContactoId(@PathVariable("id") int id) {
+		return service.buscarContacto(id);
+	}
+	@Operation(summary="eliminacion", description = "Elimina contacto por id")
+	@DeleteMapping(value="contactos/{id}")
+	public void eliminarContacto(@Parameter(description="identificador del contacto a eliminar") @PathVariable("id") int id) {
+		service.eliminarContacto(id);
+		
+	}	
+
+instancias para escalado de micros críticos con mayor volumen de peticiones
+@Value ("${eureka.instance.instance-id}")
+String id
+eureka:
+  instance:
+    instance-id: intancia1
+    #instance-id: intancia2
+
+spring cloud tecnologias
+eureka servidor para registro de servidores y facilitar descubrimiento (registramos los micros en eureka comunicado con Zuul o gateway y spring cloud config->github o contenido en el propio servidor de configuracion)
+ribbon librería del lado cliente para balanceo de carga en el acceso a los servicios(el cliente se comunica con zuul o gateway y a través de éste llega a los micros)
+spring cloud config servidor centralización configuracion
+zuul, gateway servidores punto de acceso común (desde postman no se tiene en cuenta CORS)
+
+servidor eureka con dependencia eureka, @EnableEurekaServer + server configuracion en aplication.properties
+microservicio al ser levantado se registra en eureka con dependencia eureka client y configuracion nombre servicio
+microservicio cliente no registrado en eureka con dependencia eureka client con @LoadBalancer en RestTemplate, y usando el nombre del micro registrado en eureka
+Cliente debe conocer gateway y el servidor gateway la ubicacion de servidor eureka 
+
+servidor zuul provee al microservicio cliente mediante zuul routes (según path asocia id de eureka serviceId o bien directamente url)
+para zuul solo necesita spring zuul, eureka client y spring web
+a partir de spring boot 2.4 gateway sustituye a zuul. para gateway solo necesita spring gateway y eureka client (no necesita spring web)
+gateway añade a parte de path, cookies, encabezados. Si cumple el predicado anterior aplicará filtro de modificación
+en gateway añadir clase por un error de gateway al guardar requestbody en POST y por tanto comentar en @RestController @CrossOrigin, eureka.instance.preferIpAddress: true si no VPN 
+server:
+  port: 7000
+spring:
+  application:
+    name: servidor-gateway
+  cloud: 
+   gateway:
+      routes:
+      - id: serv-vuelos
+          #lb:// cuando se va a acceder a traves de Eureka
+        uri: lb://servicio-vuelos #http://localhost:8080
+        predicates:
+          - Path=/svuelos/**
+        filters:
+          - RewritePath=/svuelos/*, /
+          
+      - id: serv-hoteles
+          #lb:// cuando se va a acceder a traves de Eureka
+        uri: lb://servicio-hoteles #http://localhost:8080
+        predicates:
+          - Path=/shoteles/**
+        filters:
+          - RewritePath=/shoteles/*, /
+          
+      - id: serv-reservas
+          #lb:// cuando se va a acceder a traves de Eureka
+        uri: lb://servicio-reservas #http://localhost:8080
+        predicates:
+          - Path=/sreservas/**
+        filters:
+          - RewritePath=/sreservas/*, /
+        
+eureka:                  
+ client:
+  serviceUrl:
+   defaultZone: http://localhost:8761/eureka  
+
+servidor de configuracion apuntando al github centralizando la configuracion de todos los microservicios (dependencia config server, + @EnableConfigServer)
+server:
+  port: 8888
+spring: 
+  cloud:
+    config:
+      server:
+        git:   #direccion repositorio remoto, o bien a carpeta del servidor configuracion
+          uri: https://github.com/tirsodiaz/configuracion-micros (cada servicio en github como nombre-servicio.yml)
+todos los microservicios tendran el starter config client, con bootstrap.yml apuntando al servidor de configuracion
+spring:
+  application:
+    name: servidor-gateway
+  cloud:
+    config:
+      uri: http://localhost:8888  #Localización Spring Cloud Config
+
+
+spring cloud circuit breaker en el cliente (implementación resilience4J) abierto o aplica cuando el servicio servidor no responde. -> circuit breaker responde ante fallos devolviendo una respuesta instantánea vacía sin llamar
+	basado en contador: de cerrado a abierto si las n últimas peticiones han fallado
+	basado en tiempo: de cerrado a abierto si las últimas peticiones en n segundos han fallado
+requiere añadir starter en cliente microservicio spring-cloud-starter-circuitbreaker-resiliencie4j
+En la clase de configuración de circuitbreaker se indicará si politica basada en fallos o en tiempo (slidingWindowType), para numero de fallos o segundos(slidingWindowSize)
+y el porcentaje fallos para abrir o aplicar circuit breaker (failureRateThreshold)
+
+@Configuration
+public class Resilience4jConfig {
+	CircuitBreakerConfig config=CircuitBreakerConfig.custom()
+			//.slidingWindowType(SlidingWindowType.COUNT_BASED) //defecto es COUNT_BASED
+			.slidingWindowSize(6)
+			//.failureRateThreshold(50) //defecto es 50% La solicitud 4 al microservicio no se haria por estado abierto
+			.waitDurationInOpenState(Duration.ofMillis(40000)) // tiempo estado abierto
+			.build();
+	
+	@Bean
+	public Customizer<Resilience4JCircuitBreakerFactory> globalCustomConfiguration() {       
+        // configuracion global
+//      return factory -> factory.configureDefault(id -> new Resilience4JConfigBuilder(id)
+//          .circuitBreakerConfig(config)
+//          .build());
+        //configuracion especifica para un determinado circuit breaker
+        return factory -> factory.configure(builder -> builder
+        	.circuitBreakerConfig(config)
+        	.build(), "circuit1");
+    } 
+}
+
+en el servicio se usará el circuito indicando lo que devolverá en caso de abrir circuito por fallos
+@Override
+	public List<Candidato> candidatosPuesto(String puesto) {
+		CircuitBreaker circuit=factory.create("circuit1");
+		return circuit.run(()->{
+			List<Candidato> candidatos=Arrays.asList(template.getForObject(url+"empleados", Candidato[].class));
+			return candidatos.stream()
+				.filter(c->c.getPuesto().equals(puesto))
+				.collect(Collectors.toList());
+		
+		},		
+		t->new ArrayList<Candidato>());//si circuito abierto por fallos micro destino, no se llama, devolvemos instantaneamente lista vacia
+	}
+
+	
+spring boot ludoteca
+https://start.spring.io/
+https://spring.io/projects/spring-boot
+https://www.baeldung.com/spring-tutorial
+spring data: (ver sus querys spring.jpa.show-sql=true)
+1. List<Game> findByName(String name);
+2. Anotación @Query https://www.baeldung.com/spring-data-jpa-query
+3. join 1 query @EntityGraph(attributePaths = {"category", "author"}) https://www.baeldung.com/jpa-entity-graph (si @ManyToOne en entity)
+4. specifications mayor flexibilidad https://www.baeldung.com/rest-api-search-language-spring-data-specifications
+
+si monolito llamadas desde capa service a otros servicios del monolito
+en caso contrario llamadas a endpoints microservicios a los controller mediante interfaces o clientes feign
+algunas ventajas feign provee ya resilence (https://cloud.spring.io/spring-cloud-static/spring-cloud-openfeign/2.0.0.RELEASE/single/spring-cloud-openfeign.html#spring-cloud-feign-hystrix-fallback) y se mantienen los headers
+
+	
+contenedor= entorno de ejecución. los contenedores comparten SO y contienen la máquina virtual java, librerías standard de java necesarias. el jar incluye ya el servidor de aplicaciones. más ligero que las máquinas virtuales que incluyen cada una su SO
+imagen a contenedor (contiene todo el software) como clase a objeto. contenedor es una instancia de imagen
+docker -v version de docker
+docker images lista imágenes existentes
+docker ps lista congenedores (docker ps -a) incluso los detenidos
+docker run -p imagen instancia contenedor, si no tiene imagen la descarga de docker hub
+docker run -p repository:tag
+docker stop contenedor para despues eliminar
+docker rm contenedor (indicando nombre o identificador de contenedor)
+docker rmi imagen elimina imagen (docker rmi -f imagen) fuerza eliminado incluso si contenedores ejecución docker rmi imagen (docker rmi repository:tag)
+docker build -t nombre_imagen ruta nombre dockerfile (ruta nombre dockerfile . si misma carpeta)(docker file contiene qué se añade en la creación imagen o entorno de ejecución)
+docker build -t imagencontactos .
+FROM imagen
+ADD jar microservicio
+EXPOSE puerto microservicio
+ENTRYPOINT comado que debe ser ejecutado al lanzar contenedor "java" "-jar" " microservicio.jar"
+docker run -p puerto_maquina:puerto_contenedor imagen (hay que mapear puerto fisico exterior con el puerto interno contenedor)
+docker run -p 9000:8080 imagencontactos
+subida de imagenes a docker hub repositorio de imagenes (siempre se trabaja con etiqueta)
+	1.docker login -u usuario
+	2.docker tag imagencontactos usuario/carpeta_repositorio:etiqueta
+	3.docker push usuario/carpeta_repositorio:etiqueta
+	docker pull usuario/carpeta_repositorio:etiqueta (solo descarga imagen en otra máquina por etiqueta)
+	docker run -p 9000:8080 imagencontactos (lanzamos contenedor, la imagen ya la tenemos)
+	docker run -p 9000:8080 usuario/carpeta_repositorio:etiqueta (descarga y lanzamos contenedor por etiqueta de repositorio docker hub)
+
+mongo accesos: 
+en criteria se añaden los criterios y se asocia a la query para uso de mongoTemplate. query.addCriteria(Criteria.where("id").is(id)); Order pedido = mongoTemplate.findOne(query, Order.class);
+matchoperation  a partir de criteria. Operation MatchOperation se agrega a la agregation que se usará con MongoTemplate AggregationResults<Order> result =  mongoTemplate.aggregate(aggregation, "order", Order.class);
+acceso directo por nombre atributos mediante OrderRepository. Optional<List<Order>> findByIdNumber(String idNumber);(en repository explícito atributo no identity) - segun convenio de nombres
+acceso directo por nombre atributos mediante OrderRepository. orderRepository.findById(id);(en repository implícito, atributo identity) - segun convenio de nombres
+@Override
+	@Timed(value = "alarmas.getorderbyid", description = "Time spent getting an existing Order by id", extraTags = {
+			"scenario", "getOrderById" })
+	public Optional<Order> getOrderById(String id) {
+		LOGGER.debug("Retrieving order {}", id);
+		Optional<Order> pedido = orderRepository.findById(id);
+		return pedido;
+	}
+
+	public Optional<Order> getOptionalOrder() {
+		return Optional.empty();
+	}
+
+	@Override
+	@Timed(value = "alarmas.getorderbyid", description = "Time spent getting an existing Order by id", extraTags = {
+			"scenario", "getOrderById" })
+	public Optional<Order> getOrderByPedidoId(String id) {
+		LOGGER.debug("Retrieving order by pedido id {}", id);
+		final Query query = new Query();
+		Optional<Order> optional = getOptionalOrder();
+		query.addCriteria(Criteria.where("id").is(id));
+		Order pedido = mongoTemplate.findOne(query, Order.class);
+		if(pedido!=null)
+			optional = Optional.of(pedido);
+		return optional;
+	}
+
+
+
+
+Siempre antes de subir los cambios al repositorio remoto, hay que comprobar que tenemos actualizada nuestra rama comparandola con la rama remota que queremos mergear, en nuestro ejemplo será develop. Por tanto tenemos que cambiar a la rama develop, descargarnos los cambios del repositorio remoto, volver a cambiar a nuestra rama y ejecutar un merge desde develop hacia nuestra rama, ejecutando estos comandos
+git checkout develop
+git pull
+git checkout <rama>
+git merge develop

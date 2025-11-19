@@ -1,0 +1,11 @@
+server:
+  port: 6000
+spring:
+  application:
+    name: servicio-cliente
+eureka:
+  client:
+    serviceUrl:
+      # Direccion a la que se conecta el microservicio con eureka
+      defaultZone: http://localhost:8761/eureka
+    registerWithEureka: false
