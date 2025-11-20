@@ -1,0 +1,38 @@
+version: '2'
+services:
+    s1:
+        build: ./hoteles
+        ports:
+            - 8001:8000
+        environment:
+            - HOST_DB=192.168.1.54
+            - PORT_DB=3306
+            - USER_DB=root
+            - PASS_DB=root
+            - IP_HOST=192.168.1.54
+            - PORT_HOST=8001
+            - HOST_EUREKA=192.168.1.54
+    s2:
+        build: ./vuelos
+        ports:
+            - 9001:9000
+        environment:
+            - HOST_DB=192.168.1.54
+            - PORT_DB=3306
+            - USER_DB=root
+            - PASS_DB=root
+            - IP_HOST=192.168.1.54
+            - PORT_HOST=9001
+            - HOST_EUREKA=192.168.1.54
+    s3:
+        build: ./reservas
+        ports:
+            - 10001:10000
+        environment:
+            - HOST_DB=192.168.1.54
+            - PORT_DB=3306
+            - USER_DB=root
+            - PASS_DB=root
+            - IP_HOST=192.168.1.54
+            - PORT_HOST=10001
+            - HOST_EUREKA=192.168.1.54

@@ -291,6 +291,78 @@ en el servicio se usará el circuito indicando lo que devolverá en caso de abri
 		t->new ArrayList<Candidato>());//si circuito abierto por fallos micro destino, no se llama, devolvemos instantaneamente lista vacia
 	}
 
+spring boot fundamentos
+server.servlet.contextPath=/product/api
+spring.profiles.active=dev en application.properties
+application-dev.properties con la url del servidor dev
+otra opcion con mayor prioridad mediante vm arguments -Dspring.profiles.active=dev
+
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+spring.datasource.url=jdbc:mysql://${HOST_DB}:${PORT_DB}/agenda2?serverTimezone=UTC
+spring.datasource.username=${USER_DB}
+spring.datasource.password=${PASS_DB}
+otra opcion durante la construccion de la imagen en dockerfile
+ENV USER_DB root
+ENV PASS_DB root
+otra opcion durante la creacion del contenedor o despliegue
+>docker run -e USER_DB=root -e PASS_DB=root -p9000:8000 imagen
+>docker-compose up (asignamos valores a las variables de entorno en tiempo de despligue)
+log TRACE, DEBUG, INFO, WARN, ERROR
+LoggerFactory.getLogguer()
+log to file
+logging.file.name logging.file.path
+loggin.file=logs/application.log
+logging.level.root=info(para toda la aplicacion)
+logging.level.org.springframework=error (nivel para paquete org.springframework)
+logging.level.com.bharath.springweb.controller.ProductController=error
+
+jms (mensaje=solo un consumidor punto a punto, topic=varios consumidores)
+starter spring-boot-starter-activemq
+@EnableJms
+springjms.miQueue=myQueue
+spring.activemq.broker-url=tcp://localhost/61616
+spring.activemq.user=admin
+spring.activemq.password=admin
+spring.jms.pub-sub-domain=true (true=topic, false=mensaje)
+@Component
+Public class MessageSender
+    @Autowired
+    JmsTemplate jmsTemplate
+    @Value("{springjms.miQueue}")
+    String queue
+    void send(String message)
+        jmsTemplate.convertandSend(queue,message)
+        o bien
+        MessageCreator mc = s->s.createTextMessage(message)
+        jmsTemplate.setPubSubDomain(true) o bien indicar en properties
+        jmsTemplate.send(queue, mc)
+@Component
+Public class MyListener
+    @JmsListener(destination="{springjms.miQueue}")
+    public void receive(String message)
+        System.out.println(message)
+    
+@PostMaping("/upload")
+upload(@RequestParam="file" MultipartFile file){
+    file.transferTo(new File(UPLOAD_DIR+file.getOriginalFileName()));
+}
+@GetMaping("/download/{filename}
+ResponseEntity<byte[]> download(@PathVariable="filename" String fileName){
+    byte[] fileData=files.readAllBytes(new File(UPLOAD_DIR+fileName.getOriginalFileName()).toPath());
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentTupe(MediaType.IMAGE_JPEG)
+    return new ResponseEntity<byte[]>(fileData,headers,HttpStatus.OK)
+}  
+
+    
+
+
+
+
+
+
+
+
 	
 spring boot ludoteca
 https://start.spring.io/
@@ -364,6 +436,12 @@ acceso directo por nombre atributos mediante OrderRepository. orderRepository.fi
 			optional = Optional.of(pedido);
 		return optional;
 	}
+
+
+
+
+
+
 
 
 

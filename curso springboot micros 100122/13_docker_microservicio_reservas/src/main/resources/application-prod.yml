@@ -1,0 +1,29 @@
+spring:
+  application:
+    name: servicio-reservas
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${HOST_DB}:${PORT_DB}/viajes?serverTimezone=UTC
+    username: ${USER_DB}
+    password: ${PASS_DB}
+  jpa:
+    hibernate:
+      naming:
+        implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+server: 
+  port: 10000
+# Config de el servidor  
+eureka: 
+  client:
+    serviceUrl:
+      # Direccion a la que se conecta el microservicio con eureka
+      defaultZone: http://${HOST_EUREKA}:8761/eureka
+  instance:
+    hostname: ${IP_HOST}
+    non-secure-port: ${PORT_HOST}
+
+#si VPN comentado, no VPN descomentado (en ambos casos reiniciar gateway y micros)
+#eureka.instance.preferIpAddress: true
+  #instance:
+    #preferIpAddress: true

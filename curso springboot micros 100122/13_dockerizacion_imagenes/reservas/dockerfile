@@ -1,0 +1,3 @@
+FROM openjdk
+ADD reservas.jar reservas.jar
+ENTRYPOINT java -jar reservas.jar
